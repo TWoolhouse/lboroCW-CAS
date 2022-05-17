@@ -1,24 +1,24 @@
 package cas;
 
-import cas.gui.Context;
+import cas.inv.Basket;
 import cas.inv.Inventory;
 import cas.user.Users;
 
 public class Shop {
-	Inventory inventory;
-	Users users;
+	public Inventory inventory;
+	public Basket basket;
+	public Users users;
 
 	Shop(String stock_file, String user_file) {
 		inventory = new Inventory(stock_file);
 		users = new Users(user_file);
+		basket = new Basket();
 		inventory.save();
 
 	}
 
-	static Context swing;
-
 	public static void main(String[] args) {
-		var shop = new Shop("Stock.txt", "UserAccounts.txt");
-		swing = new Context(shop);
+		Shop shop = new Shop("Stock.txt", "UserAccounts.txt");
+		cas.gui.Context.start(shop);
 	}
 }

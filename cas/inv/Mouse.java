@@ -1,6 +1,6 @@
 package cas.inv;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class Mouse extends Item {
 	enum Type {
@@ -18,10 +18,10 @@ public class Mouse extends Item {
 	}
 
 	@Override
-	ArrayList<String> display() {
-		var list = super.display();
-		list.add(type.toString());
-		list.add(buttons.toString());
+	public List<String> display() {
+		List<String> list = super.display();
+		list.add(5, type.toString());
+		list.add(6, buttons.toString());
 		return list;
 	}
 

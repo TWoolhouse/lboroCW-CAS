@@ -17,4 +17,20 @@ public class User {
 		this(Integer.valueOf(data[0]), data[1], data[2], new Address(data[3], data[4], data[5]));
 	}
 
+	public Integer getUuid() {
+		return uuid;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
 }

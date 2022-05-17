@@ -17,7 +17,7 @@ public class Writer implements Closeable {
 	}
 
 	public <T extends RowCSV> void write(T object) throws IOException {
-		for (var string : object.csv()) {
+		for (String string : object.csv()) {
 			file.write(string + ", ");
 		}
 		file.write('\n');

@@ -1,6 +1,6 @@
 package cas.inv;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class Keyboard extends Item {
 	enum Type {
@@ -24,8 +24,10 @@ public class Keyboard extends Item {
 	}
 
 	@Override
-	ArrayList<String> display() {
-		var list = super.display();
+	public List<String> display() {
+		List<String> list = super.display();
+		list.add(5, type.toString());
+		list.add(6, layout.toString());
 		return list;
 	}
 

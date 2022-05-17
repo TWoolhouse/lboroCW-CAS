@@ -15,7 +15,7 @@ public class Extractor {
 		try {
 			Class<?> clazz = Class
 					.forName(pck.getName() + "." + data[pos].substring(0, 1).toUpperCase() + data[pos].substring(1));
-			var obj = clazz.getConstructor(String[].class).newInstance(new Object[] { data });
+			Object obj = clazz.getConstructor(String[].class).newInstance(new Object[] { data });
 			System.out.println(obj);
 			return obj;
 		} catch (ClassNotFoundException e) {

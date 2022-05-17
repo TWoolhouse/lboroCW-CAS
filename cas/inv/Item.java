@@ -1,6 +1,7 @@
 package cas.inv;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Item implements cas.io.RowCSV {
 	enum Connection {
@@ -42,11 +43,20 @@ public abstract class Item implements cas.io.RowCSV {
 				Double.valueOf(data[8]));
 	}
 
-	ArrayList<String> display() {
-		var list = new ArrayList<String>(7);
+	public String getDisplayName() {
+		return this.getBarcode() + " " + this.getBrand() + " " + this.getClass().getSimpleName();
+	}
+
+	public List<String> display() {
+		List<String> list = new ArrayList<String>(8);
+		list.add(this.getClass().getSimpleName());
 		list.add(getBarcode());
 		list.add(brand);
-		// etc
+		list.add(colour);
+		list.add(connectivity.toString());
+		list.add(getQuantity().toString());
+		list.add(getPrice().toString());
+		list.add(original.toString());
 		return list;
 	}
 
@@ -80,6 +90,22 @@ public abstract class Item implements cas.io.RowCSV {
 
 	public String getBarcode() {
 		return barcode;
+	}
+
+	public String getBrand() {
+		return brand;
+	}
+
+	public String getColour() {
+		return colour;
+	}
+
+	public Connection getConnectivity() {
+		return connectivity;
+	}
+
+	public Double getOriginal() {
+		return original;
 	}
 
 }

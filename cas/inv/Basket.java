@@ -13,21 +13,25 @@ public class Basket {
 		this.items = items;
 	}
 
-	BasketBucket append(BasketBucket item) {
+	public BasketBucket append(BasketBucket item) {
+		for (BasketBucket bucket : items) {
+			if (bucket.getItem().getBarcode().equals(item.getItem().getBarcode())) {
+				bucket.setCount(bucket.getCount() + item.getCount());
+				return bucket;
+			}
+		}
 		this.items.add(item);
 		return item;
 	}
 
-	BasketBucket append(Item item, Integer count) {
-		var it = new BasketBucket(item, count);
-		this.items.add(it);
-		return it;
+	public BasketBucket append(Item item, Integer count) {
+		return append(new BasketBucket(item, count));
 	}
 
 	public Double price() {
 		Double sum = 0.0;
-		for (var basketBucket : items) {
-			var item = basketBucket.getItem();
+		for (BasketBucket basketBucket : items) {
+			Item item = basketBucket.getItem();
 			sum += item.getPrice() * item.getQuantity();
 		}
 		return sum;

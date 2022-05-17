@@ -24,6 +24,7 @@ public class Handler<T> implements Closeable {
 		return scanner.hasNextLine();
 	}
 
+	@SuppressWarnings("unchecked")
 	public T read() {
 		return (T) extractor.decode(scanner.nextLine().split(", "));
 	}

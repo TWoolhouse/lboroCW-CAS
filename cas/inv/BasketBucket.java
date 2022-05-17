@@ -20,4 +20,9 @@ public class BasketBucket {
 	public Item getItem() {
 		return item;
 	}
+
+	@Override
+	public String toString() {
+		return item.getDisplayName() + " x" + count;
+	}
 }

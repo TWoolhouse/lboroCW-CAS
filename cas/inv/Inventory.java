@@ -5,13 +5,13 @@ import java.util.HashMap;
 
 public class Inventory {
 	private String filename;
-	private HashMap<String, Item> items;
+	public HashMap<String, Item> items;
 
 	public Inventory(String filename) {
 		this.filename = filename;
 		items = new HashMap<String, Item>();
 
-		var handler = new cas.io.Handler<Item>(filename, Item.class.getPackage(), 1);
+		cas.io.Handler<Item> handler = new cas.io.Handler<Item>(filename, Item.class.getPackage(), 1);
 		while (handler.open()) {
 			add_item(handler.read());
 		}
@@ -27,9 +27,9 @@ public class Inventory {
 	}
 
 	public void save() {
-		var file = new cas.io.Writer(filename);
+		cas.io.Writer file = new cas.io.Writer(filename);
 		try {
-			for (var item : items.values()) {
+			for (Item item : items.values()) {
 				file.write(item);
 			}
 		} catch (IOException e) {
