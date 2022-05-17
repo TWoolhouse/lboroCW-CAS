@@ -28,13 +28,23 @@ public class Basket {
 		return append(new BasketBucket(item, count));
 	}
 
+	public void empty() {
+		this.items.clear();
+	}
+
 	public Double price() {
 		Double sum = 0.0;
 		for (BasketBucket basketBucket : items) {
-			Item item = basketBucket.getItem();
-			sum += item.getPrice() * item.getQuantity();
+			sum += basketBucket.getItem().getPrice() * basketBucket.getCount();
 		}
 		return sum;
+	}
+
+	public void purchase() {
+		for (BasketBucket bucket : items) {
+			bucket.getItem().setQuantity(bucket.getItem().getQuantity() - bucket.getCount());
+		}
+		empty();
 	}
 
 }

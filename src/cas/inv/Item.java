@@ -88,6 +88,10 @@ public abstract class Item implements cas.io.RowCSV {
 		return quantity;
 	}
 
+	public void setQuantity(Integer quantity) {
+		this.quantity = quantity;
+	}
+
 	public String getBarcode() {
 		return barcode;
 	}
