@@ -33,7 +33,6 @@ public class Inventory {
 				file.write(item);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		file.close();

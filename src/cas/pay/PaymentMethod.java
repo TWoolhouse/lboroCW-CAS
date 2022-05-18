@@ -10,7 +10,7 @@ public abstract class PaymentMethod {
 
 	// Move
 	public String display(Double amount, Address address) {
-		return "£" + amount.toString() + " paid using " + name() + ", and the delivery address is "
+		return amount.toString() + " paid using " + name() + ", and the delivery address is "
 				+ address.toString();
 	}
 

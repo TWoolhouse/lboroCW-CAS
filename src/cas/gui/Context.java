@@ -25,11 +25,13 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -45,10 +47,6 @@ import cas.pay.PayPal;
 import cas.pay.PaymentMethod;
 import cas.user.Admin;
 import cas.user.User;
-import com.jgoodies.forms.factories.DefaultComponentFactory;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.JLayeredPane;
 
 public class Context {
 
@@ -95,13 +93,57 @@ public class Context {
 		initialize();
 	}
 
+	private class KeyAdapterExtensionSizedDigit extends KeyAdapter {
+		protected final Integer size;
+		protected final JTextField txt_ipt;
+
+		private KeyAdapterExtensionSizedDigit(Integer size, JTextField txt_ipt) {
+			this.size = size;
+			this.txt_ipt = txt_ipt;
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			String txt = txt_ipt.getText().strip();
+			if (txt.length() > size) {
+				txt = txt.substring(0, size);
+				txt_ipt.setText(txt);
+			}
+		}
+	}
+
+	private final class KeyAdapterExtensionCreditCard extends KeyAdapterExtensionSizedDigit {
+		private final JButton btn_submit;
+		private final boolean field;
+
+		private KeyAdapterExtensionCreditCard(Integer size, JButton btn_submit, JTextField txt_ipt, Boolean field) {
+			super(size, txt_ipt);
+			this.btn_submit = btn_submit;
+			this.field = field;
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			super.keyReleased(e);
+			String txt = txt_ipt.getText();
+			if (field)
+				((CreditCard) payment_method).setNumber(txt);
+			else
+				((CreditCard) payment_method).setSecurity(txt);
+			btn_submit.setEnabled(payment_method.valid());
+		}
+	}
+
 	private final class ActionListenerPaymentButton implements ActionListener {
 		private final JButton btn;
 		private final DefaultListModel<BasketBucket> basket_model;
+		private final DefaultTableModel table_model;
 
-		private ActionListenerPaymentButton(JButton btn, DefaultListModel<BasketBucket> basket_model) {
+		private ActionListenerPaymentButton(JButton btn, DefaultListModel<BasketBucket> basket_model,
+				DefaultTableModel table_model) {
 			this.btn = btn;
 			this.basket_model = basket_model;
+			this.table_model = table_model;
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -111,8 +153,13 @@ public class Context {
 					JOptionPane.INFORMATION_MESSAGE);
 			dialog.setVisible(false);
 			basket_model.removeAllElements();
-			// TODO: Reload table
 			shop.basket.purchase();
+			// TODO: Affect the global file
+			// shop.inventory.save();
+			table_model.setDataVector(table_data(), new String[] {
+					"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
+					"Quantity", "Price"
+			});
 		}
 	}
 
@@ -185,7 +232,8 @@ public class Context {
 			public void valueChanged(ListSelectionEvent event) {
 				if (event.getValueIsAdjusting())
 					return;
-				selected_item = shop.inventory.items.get(table.getValueAt(table.getSelectedRow(), 1));
+				if (table.getSelectedRow() >= 0)
+					selected_item = shop.inventory.items.get(table.getValueAt(table.getSelectedRow(), 1));
 				btnBasket_add.setEnabled(selected_item != null);
 			}
 		});
@@ -244,7 +292,7 @@ public class Context {
 		panel_shop.add(panel_admin, "PANEL_ADMIN");
 
 		JScrollPane scrollPane_1_1 = new JScrollPane();
-		scrollPane_1_1.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		scrollPane_1_1.setFont(Fonts.medium);
 		panel_admin.setLeftComponent(scrollPane_1_1);
 
 		table_1 = new JTable() {
@@ -252,9 +300,9 @@ public class Context {
 				return false;
 			};
 		};
-		table.setFont(Fonts.small);
-		table.setFillsViewportHeight(true);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table_1.setFont(Fonts.small);
+		table_1.setFillsViewportHeight(true);
+		table_1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		DefaultTableModel table_admin = new DefaultTableModel();
 		table_1.setModel(table_admin);
 		scrollPane_1_1.setViewportView(table_1);
@@ -288,7 +336,8 @@ public class Context {
 		sl_panel_create.putConstraint(SpringLayout.EAST, txt_barcode, 0, SpringLayout.EAST, combo_create_type);
 		panel_create.add(txt_barcode);
 
-		JLabel lbl_create_1 = new JLabel("Barcode");
+		JLabel lbl_create_1 = new JLabel("6-Digit Barcode");
+		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_1, 0, SpringLayout.EAST, txt_barcode);
 		lbl_create_1.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_1, 0, SpringLayout.WEST, txt_barcode);
 		sl_panel_create.putConstraint(SpringLayout.SOUTH, lbl_create_1, 0, SpringLayout.NORTH, txt_barcode);
@@ -304,8 +353,9 @@ public class Context {
 		panel_create.add(txt_brand);
 
 		JLabel lbl_create_2 = new JLabel("Brand");
+		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_2, 0, SpringLayout.WEST, txt_brand);
+		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_2, 0, SpringLayout.EAST, txt_brand);
 		lbl_create_2.setFont(Fonts.small);
-		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_2, 0, SpringLayout.WEST, combo_create_type);
 		sl_panel_create.putConstraint(SpringLayout.SOUTH, lbl_create_2, 0, SpringLayout.NORTH, txt_brand);
 		panel_create.add(lbl_create_2);
 
@@ -318,6 +368,7 @@ public class Context {
 		panel_create.add(txt_colour);
 
 		JLabel lbl_create_3 = new JLabel("Colour");
+		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_3, 0, SpringLayout.EAST, txt_colour);
 		lbl_create_3.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_3, 0, SpringLayout.WEST, txt_colour);
 		sl_panel_create.putConstraint(SpringLayout.SOUTH, lbl_create_3, 0, SpringLayout.NORTH, txt_colour);
@@ -335,6 +386,7 @@ public class Context {
 		panel_create.add(number_quantity);
 
 		JLabel lbl_create_5 = new JLabel("Quantity");
+		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_5, 0, SpringLayout.EAST, number_quantity);
 		lbl_create_5.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_5, 0, SpringLayout.WEST, number_quantity);
 		sl_panel_create.putConstraint(SpringLayout.SOUTH, lbl_create_5, 0, SpringLayout.NORTH, number_quantity);
@@ -349,13 +401,14 @@ public class Context {
 		panel_create.add(number_cost);
 
 		JLabel lbl_create_6 = new JLabel("Cost");
+		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_6, 0, SpringLayout.EAST, number_cost);
 		lbl_create_6.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_6, 0, SpringLayout.WEST, number_cost);
 		sl_panel_create.putConstraint(SpringLayout.SOUTH, lbl_create_6, 0, SpringLayout.NORTH, number_cost);
 		panel_create.add(lbl_create_6);
 
 		number_price = new JSpinner();
-		number_price.setModel(new SpinnerNumberModel(new Integer(0), new Integer(0), null, new Integer(1)));
+		number_price.setModel(new SpinnerNumberModel(new Float(0), new Float(0), null, new Float(1)));
 		number_price.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.NORTH, number_price, spread, SpringLayout.SOUTH, number_cost);
 		sl_panel_create.putConstraint(SpringLayout.WEST, number_price, 0, SpringLayout.WEST, combo_create_type);
@@ -363,6 +416,7 @@ public class Context {
 		panel_create.add(number_price);
 
 		JLabel lbl_create_7 = new JLabel("Price");
+		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_7, 0, SpringLayout.EAST, number_price);
 		lbl_create_7.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_7, 0, SpringLayout.WEST, number_price);
 		sl_panel_create.putConstraint(SpringLayout.SOUTH, lbl_create_7, 0, SpringLayout.NORTH, number_price);
@@ -392,6 +446,8 @@ public class Context {
 		create_keyboard.add(combo_keyboard_layout);
 
 		JLabel lbl_create_keyboard_1 = new JLabel("Keyboard Layout");
+		sl_create_keyboard.putConstraint(SpringLayout.EAST, lbl_create_keyboard_1, 0, SpringLayout.EAST,
+				combo_keyboard_layout);
 		lbl_create_keyboard_1.setFont(Fonts.small);
 		sl_create_keyboard.putConstraint(SpringLayout.WEST, lbl_create_keyboard_1, 0, SpringLayout.WEST,
 				combo_keyboard_layout);
@@ -410,8 +466,10 @@ public class Context {
 
 		JLabel lbl_create_keyboard_2 = new JLabel("Keyboard Type");
 		sl_create_keyboard.putConstraint(SpringLayout.WEST, lbl_create_keyboard_2, 0, SpringLayout.WEST,
-				combo_keyboard_layout);
+				combo_keyboard_type);
 		sl_create_keyboard.putConstraint(SpringLayout.SOUTH, lbl_create_keyboard_2, 0, SpringLayout.NORTH,
+				combo_keyboard_type);
+		sl_create_keyboard.putConstraint(SpringLayout.EAST, lbl_create_keyboard_2, 0, SpringLayout.EAST,
 				combo_keyboard_type);
 		lbl_create_keyboard_2.setFont(Fonts.small);
 		create_keyboard.add(lbl_create_keyboard_2);
@@ -431,6 +489,7 @@ public class Context {
 		JLabel lbl_create_mouse_1 = new JLabel("Mouse Type");
 		sl_create_mouse.putConstraint(SpringLayout.WEST, lbl_create_mouse_1, 0, SpringLayout.WEST, combo_mouse_type);
 		sl_create_mouse.putConstraint(SpringLayout.SOUTH, lbl_create_mouse_1, 0, SpringLayout.NORTH, combo_mouse_type);
+		sl_create_mouse.putConstraint(SpringLayout.EAST, lbl_create_mouse_1, 0, SpringLayout.EAST, combo_mouse_type);
 		lbl_create_mouse_1.setFont(Fonts.small);
 		create_mouse.add(lbl_create_mouse_1);
 
@@ -448,25 +507,21 @@ public class Context {
 				number_mouse_buttons);
 		sl_create_mouse.putConstraint(SpringLayout.SOUTH, lbl_create_mouse_2, 0, SpringLayout.NORTH,
 				number_mouse_buttons);
+		sl_create_mouse.putConstraint(SpringLayout.EAST, lbl_create_mouse_2, 0, SpringLayout.EAST,
+				number_mouse_buttons);
 		lbl_create_mouse_2.setFont(Fonts.small);
 		create_mouse.add(lbl_create_mouse_2);
 
 		combo_create_type.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CardLayout layout = (CardLayout) cards_create_type.getLayout();
-				layout.show(cards_create_type, "CREATE_" + combo_create_type.getSelectedItem().toString().toUpperCase());
+				layout.show(cards_create_type,
+						"CREATE_" + combo_create_type.getSelectedItem().toString().toUpperCase());
 			}
 		});
 
-		JButton create_item = new JButton("Create Stock Item");
-		create_item.setFont(Fonts.medium);
-		sl_panel_create.putConstraint(SpringLayout.SOUTH, cards_create_type, 0, SpringLayout.NORTH, create_item);
-		sl_panel_create.putConstraint(SpringLayout.WEST, create_item, 0, SpringLayout.WEST, cards_create_type);
-		sl_panel_create.putConstraint(SpringLayout.SOUTH, create_item, -10, SpringLayout.SOUTH, panel_create);
-		sl_panel_create.putConstraint(SpringLayout.EAST, create_item, 0, SpringLayout.EAST, cards_create_type);
-		panel_create.add(create_item);
-
 		JComboBox combo_connection = new JComboBox();
+		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_4, 0, SpringLayout.EAST, combo_connection);
 		combo_connection.setFont(Fonts.small);
 		combo_connection.setModel(new DefaultComboBoxModel(new String[] { "wired", "wireless" }));
 		sl_panel_create.putConstraint(SpringLayout.NORTH, number_quantity, spread, SpringLayout.SOUTH,
@@ -477,6 +532,17 @@ public class Context {
 		sl_panel_create.putConstraint(SpringLayout.WEST, combo_connection, 0, SpringLayout.WEST, combo_create_type);
 		sl_panel_create.putConstraint(SpringLayout.EAST, combo_connection, 0, SpringLayout.EAST, combo_create_type);
 		panel_create.add(combo_connection);
+
+		JButton create_item = new JButton("Create Stock Item");
+		create_item.setFont(Fonts.medium);
+		sl_panel_create.putConstraint(SpringLayout.SOUTH, cards_create_type, 0, SpringLayout.NORTH, create_item);
+		sl_panel_create.putConstraint(SpringLayout.WEST, create_item, 0, SpringLayout.WEST, cards_create_type);
+		sl_panel_create.putConstraint(SpringLayout.SOUTH, create_item, -10, SpringLayout.SOUTH, panel_create);
+		sl_panel_create.putConstraint(SpringLayout.EAST, create_item, 0, SpringLayout.EAST, cards_create_type);
+		panel_create.add(create_item);
+
+		// CREATE STOCK HANDLERS
+		txt_barcode.addKeyListener(new KeyAdapterExtensionSizedDigit(6, txt_barcode));
 
 		JPanel panel_payments = new JPanel();
 		panel_shop.add(panel_payments, "name_11891378842800");
@@ -492,17 +558,7 @@ public class Context {
 		sl_panel_pay_creditcard.putConstraint(SpringLayout.SOUTH, btn_payc, -100, SpringLayout.SOUTH,
 				panel_pay_creditcard);
 		txt_payc_num = new JTextField();
-		txt_payc_num.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				String txt = txt_payc_num.getText().strip();
-				if (txt.length() > 6)
-					txt = txt.substring(0, 6);
-				txt_payc_num.setText(txt);
-				((CreditCard) payment_method).setNumber(txt);
-				btn_payc.setEnabled(payment_method.valid());
-			}
-		});
+		txt_payc_num.addKeyListener(new KeyAdapterExtensionCreditCard(6, btn_payc, txt_payc_num, true));
 		txt_payc_num.setFont(Fonts.medium);
 		sl_panel_pay_creditcard.putConstraint(SpringLayout.NORTH, txt_payc_num, 50, SpringLayout.NORTH,
 				panel_pay_creditcard);
@@ -516,17 +572,7 @@ public class Context {
 		txt_payc_num.setColumns(10);
 
 		txt_payc_sec = new JTextField();
-		txt_payc_sec.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				String txt = txt_payc_sec.getText().strip();
-				if (txt.length() > 3)
-					txt = txt.substring(0, 3);
-				txt_payc_sec.setText(txt);
-				((CreditCard) payment_method).setSecurity(txt);
-				btn_payc.setEnabled(payment_method.valid());
-			}
-		});
+		txt_payc_sec.addKeyListener(new KeyAdapterExtensionCreditCard(3, btn_payc, txt_payc_sec, false));
 		sl_panel_pay_creditcard.putConstraint(SpringLayout.NORTH, txt_payc_sec, 16, SpringLayout.SOUTH, txt_payc_num);
 		sl_panel_pay_creditcard.putConstraint(SpringLayout.SOUTH, txt_payc_sec, 66, SpringLayout.SOUTH, txt_payc_num);
 		txt_payc_sec.setFont(Fonts.medium);
@@ -535,7 +581,7 @@ public class Context {
 		txt_payc_sec.setColumns(10);
 		panel_pay_creditcard.add(txt_payc_sec);
 
-		btn_payc.addActionListener(new ActionListenerPaymentButton(btn_payc, basket_model));
+		btn_payc.addActionListener(new ActionListenerPaymentButton(btn_payc, basket_model, table_customer));
 		btn_payc.setEnabled(false);
 		sl_panel_pay_creditcard.putConstraint(SpringLayout.WEST, btn_payc, 0, SpringLayout.WEST, txt_payc_sec);
 		sl_panel_pay_creditcard.putConstraint(SpringLayout.EAST, btn_payc, 0, SpringLayout.EAST, txt_payc_sec);
@@ -585,7 +631,7 @@ public class Context {
 		sl_panel_pay_paypal.putConstraint(SpringLayout.EAST, txt_payp_email, -100, SpringLayout.EAST, panel_pay_paypal);
 		panel_pay_paypal.add(txt_payp_email);
 
-		btn_payp.addActionListener(new ActionListenerPaymentButton(btn_payp, basket_model));
+		btn_payp.addActionListener(new ActionListenerPaymentButton(btn_payp, basket_model, table_customer));
 
 		JLabel lblNewLabel_3 = new JLabel("Email");
 		lblNewLabel_3.setFont(Fonts.small);
@@ -607,6 +653,7 @@ public class Context {
 					JOptionPane.showMessageDialog(frmComputerShop,
 							"Sorry, there is no more stock in the shop.", "Too Many Items", JOptionPane.ERROR_MESSAGE);
 					bucket.setCount(bucket.getItem().getQuantity());
+					return;
 				}
 				if (!basket_model.contains(bucket)) {
 					basket_model.addElement(bucket);
@@ -651,6 +698,7 @@ public class Context {
 				Rectangle fb = dialog.getParent().getBounds();
 				dialog.setLocation(fb.x + fb.width / 2 - 200, fb.y + fb.height / 2 - 200);
 				dialog.setVisible(true);
+				table.updateUI();
 			}
 		});
 
@@ -661,12 +709,14 @@ public class Context {
 				if (active_user instanceof Admin) {
 					Admin admin = (Admin) active_user;
 					table_admin.setDataVector(table_data(), new String[] {
-							"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons", "Quantity", "Price", "Original"
+							"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
+							"Quantity", "Price", "Original"
 					});
 					layout.show(panel_shop, "PANEL_ADMIN");
 				} else {
 					table_customer.setDataVector(table_data(), new String[] {
-							"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons", "Quantity", "Price"
+							"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
+							"Quantity", "Price"
 					});
 					shop.basket.empty();
 					basket_model.clear();
@@ -698,3 +748,4 @@ public class Context {
 				.toArray(new Object[rows.get(0).length][rows.size()]);
 	}
 }
+// TODO: Filtering customer table
