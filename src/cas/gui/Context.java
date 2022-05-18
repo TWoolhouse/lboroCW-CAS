@@ -51,13 +51,16 @@ import cas.pay.PayPal;
 import cas.pay.PaymentMethod;
 import cas.user.Admin;
 import cas.user.User;
+import javax.swing.JCheckBox;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class Context {
 
 	private Shop shop;
 	private JFrame frmComputerShop;
 	private JTabbedPane tabbedPane;
-	private JTable table;
+	private JTable table_c;
 	private JTextField txt_payc_num;
 	private JTextField txt_payc_sec;
 
@@ -65,7 +68,7 @@ public class Context {
 	private User active_user = null;
 	private PaymentMethod payment_method;
 	private JTextField txt_payp_email;
-	private JTable table_1;
+	private JTable table_a;
 	private JTextField txt_barcode;
 	private JTextField txt_brand;
 	private JTextField txt_colour;
@@ -73,6 +76,11 @@ public class Context {
 	private JSpinner number_cost;
 	private JSpinner number_price;
 	private JComboBox combo_create_type;
+	private JTextField flt_brand;
+	private DefaultTableModel table_customer;
+	private DefaultTableModel table_admin;
+	private JSpinner number_mouse_btns;
+	private JCheckBox chckbx_mouse_only;
 
 	/**
 	 * Launch the application.
@@ -159,8 +167,7 @@ public class Context {
 			dialog.setVisible(false);
 			basket_model.removeAllElements();
 			shop.basket.purchase();
-			// TODO: Reenable
-			// shop.inventory.save();
+			shop.inventory.save();
 			table_model.setDataVector(table_data(), new String[] {
 					"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
 					"Quantity", "Price"
@@ -229,29 +236,28 @@ public class Context {
 
 		JScrollPane scrollPane_1 = new JScrollPane();
 		scrollPane_1.setFont(Fonts.medium);
-		panel_customer.setLeftComponent(scrollPane_1);
 
-		table = new JTable() {
+		table_c = new JTable() {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			};
 		};
 		JButton btnBasket_add = new JButton("Add to Basket");
-		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+		table_c.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent event) {
 				if (event.getValueIsAdjusting())
 					return;
-				if (table.getSelectedRow() >= 0)
-					selected_item = shop.inventory.items.get(table.getValueAt(table.getSelectedRow(), 1));
+				if (table_c.getSelectedRow() >= 0)
+					selected_item = shop.inventory.items.get(table_c.getValueAt(table_c.getSelectedRow(), 1));
 				btnBasket_add.setEnabled(selected_item != null);
 			}
 		});
-		table.setFont(Fonts.small);
-		table.setFillsViewportHeight(true);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		scrollPane_1.setViewportView(table);
-		DefaultTableModel table_customer = new DefaultTableModel();
-		table.setModel(table_customer);
+		table_c.setFont(Fonts.small);
+		table_c.setFillsViewportHeight(true);
+		table_c.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		scrollPane_1.setViewportView(table_c);
+		table_customer = new DefaultTableModel();
+		table_c.setModel(table_customer);
 
 		JPanel panel_basket = new JPanel();
 		panel_customer.setRightComponent(panel_basket);
@@ -295,6 +301,55 @@ public class Context {
 		sl_panel_basket.putConstraint(SpringLayout.EAST, btnBasket_add, 0, SpringLayout.EAST, panel_basket);
 		panel_basket.add(btnBasket_add);
 
+		JSplitPane splitPane = new JSplitPane();
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		panel_customer.setLeftComponent(splitPane);
+		splitPane.setRightComponent(scrollPane_1);
+
+		JPanel panel_1 = new JPanel();
+		splitPane.setLeftComponent(panel_1);
+
+		JLabel lbl_brand = new JLabel("Filter Brands");
+		lbl_brand.setFont(Fonts.small);
+		panel_1.add(lbl_brand);
+
+		flt_brand = new JTextField();
+		flt_brand.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				recreate_table_customer();
+			}
+		});
+		flt_brand.setFont(Fonts.small);
+		panel_1.add(flt_brand);
+		flt_brand.setColumns(10);
+
+		JLabel lblNewLabel_6 = new JLabel("    ");
+		panel_1.add(lblNewLabel_6);
+
+		JLabel lblNewLabel_5 = new JLabel("Filter Mouse Buttons");
+		lblNewLabel_5.setFont(Fonts.small);
+		panel_1.add(lblNewLabel_5);
+
+		number_mouse_btns = new JSpinner();
+		number_mouse_btns.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				recreate_table_customer();
+			}
+		});
+		number_mouse_btns.setFont(Fonts.small);
+		number_mouse_btns.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		panel_1.add(number_mouse_btns);
+
+		chckbx_mouse_only = new JCheckBox("Mice Only?");
+		chckbx_mouse_only.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				recreate_table_customer();
+			}
+		});
+		chckbx_mouse_only.setFont(Fonts.small);
+		panel_1.add(chckbx_mouse_only);
+
 		JSplitPane panel_admin = new JSplitPane();
 		panel_admin.setResizeWeight(0.5);
 		panel_admin.setContinuousLayout(true);
@@ -304,17 +359,17 @@ public class Context {
 		scrollPane_1_1.setFont(Fonts.medium);
 		panel_admin.setLeftComponent(scrollPane_1_1);
 
-		table_1 = new JTable() {
+		table_a = new JTable() {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			};
 		};
-		table_1.setFont(Fonts.small);
-		table_1.setFillsViewportHeight(true);
-		table_1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		DefaultTableModel table_admin = new DefaultTableModel();
-		table_1.setModel(table_admin);
-		scrollPane_1_1.setViewportView(table_1);
+		table_a.setFont(Fonts.small);
+		table_a.setFillsViewportHeight(true);
+		table_a.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table_admin = new DefaultTableModel();
+		table_a.setModel(table_admin);
+		scrollPane_1_1.setViewportView(table_a);
 
 		JPanel panel_create = new JPanel();
 		panel_admin.setRightComponent(panel_create);
@@ -592,13 +647,12 @@ public class Context {
 					// 112233, mouse, gaming, Logitech, black, wireless, 15, 7.5, 9.5, 3,
 				}
 				shop.inventory.add_item(item);
-				// TODO: Reenable
-				// shop.inventory.save();
+				shop.inventory.save();
 				table_admin.setDataVector(table_data(), new String[] {
 						"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
 						"Quantity", "Price", "Original"
 				});
-				table_1.updateUI();
+				table_a.updateUI();
 			}
 		});
 
@@ -756,7 +810,7 @@ public class Context {
 				Rectangle fb = dialog.getParent().getBounds();
 				dialog.setLocation(fb.x + fb.width / 2 - 200, fb.y + fb.height / 2 - 200);
 				dialog.setVisible(true);
-				table.updateUI();
+				table_c.updateUI();
 			}
 		});
 
@@ -772,10 +826,7 @@ public class Context {
 					});
 					layout.show(panel_shop, "PANEL_ADMIN");
 				} else {
-					table_customer.setDataVector(table_data(), new String[] {
-							"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
-							"Quantity", "Price"
-					});
+					recreate_table_customer();
 					shop.basket.empty();
 					basket_model.clear();
 					layout.show(panel_shop, "PANEL_CUSTOMER");
@@ -793,6 +844,13 @@ public class Context {
 		// panel_payments.add(panel_pay_creditcard);
 		// panel_payments.add(panel_pay_paypal);
 
+	}
+
+	protected void recreate_table_customer() {
+		table_customer.setDataVector(table_data_filter(), new String[] {
+				"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
+				"Quantity", "Price"
+		});
 	}
 
 	private static boolean digit_only(String string) {
@@ -813,15 +871,36 @@ public class Context {
 		btn.setEnabled(flag);
 	}
 
+	public interface TableDataPredicate {
+		boolean predicate(Item item);
+	}
+
 	private Object[][] table_data() {
+		return table_data(item -> true);
+	}
+
+	private Object[][] table_data(TableDataPredicate pred) {
 		ArrayList<Object[]> rows = new ArrayList<Object[]>(shop.inventory.items.size());
 		for (Item item : shop.inventory.items.values()) {
-			rows.add(item.display().toArray());
+			if (pred.predicate(item))
+				rows.add(item.display().toArray());
 		}
 		rows.sort((arg0, arg1) -> Double.compare(Double.parseDouble((String) arg0[8]),
 				Double.parseDouble((String) arg1[8])));
-		return (Object[][]) rows
-				.toArray(new Object[rows.get(0).length][rows.size()]);
+		try {
+			return (Object[][]) rows
+					.toArray(new Object[rows.get(0).length][rows.size()]);
+		} catch (java.lang.IndexOutOfBoundsException e) {
+			return new Object[][] {};
+		}
+	}
+
+	private Object[][] table_data_filter() {
+		return table_data(item -> {
+			return (chckbx_mouse_only.isSelected() ? (item instanceof Mouse
+					&& ((Mouse) item).getButtons() == (Integer) number_mouse_btns.getValue()) : true)
+					&& item.getBrand().matches("(?i).*" + flt_brand.getText() + ".*");
+		});
 	}
 }
 // TODO: Filtering customer table

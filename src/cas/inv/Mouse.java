@@ -34,4 +34,9 @@ public class Mouse extends Item {
 	protected String extra() {
 		return buttons.toString();
 	}
+
+	public Integer getButtons() {
+		return buttons;
+	}
+
 }
