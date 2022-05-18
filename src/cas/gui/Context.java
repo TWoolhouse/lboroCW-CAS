@@ -50,6 +50,7 @@ import cas.pay.CreditCard;
 import cas.pay.PayPal;
 import cas.pay.PaymentMethod;
 import cas.user.Admin;
+import cas.user.Customer;
 import cas.user.User;
 import javax.swing.JCheckBox;
 import javax.swing.event.ChangeListener;
@@ -162,11 +163,12 @@ public class Context {
 		public void actionPerformed(ActionEvent e) {
 			Container dialog = this.btn.getParent().getParent().getParent().getParent();
 			JOptionPane.showMessageDialog(dialog,
-					payment_method.display(shop.basket.price(), active_user.getAddress()), "Payment Confirmation",
+					((Customer) active_user).pay(payment_method),
+					"Payment Confirmation",
 					JOptionPane.INFORMATION_MESSAGE);
 			dialog.setVisible(false);
 			basket_model.removeAllElements();
-			shop.basket.purchase();
+			((Customer) active_user).basket.purchase();
 			shop.inventory.save();
 			table_model.setDataVector(table_data(), new String[] {
 					"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
@@ -646,7 +648,11 @@ public class Context {
 							number_mouse_buttons.getValue().toString() });
 					// 112233, mouse, gaming, Logitech, black, wireless, 15, 7.5, 9.5, 3,
 				}
-				shop.inventory.add_item(item);
+				if (!shop.inventory.add_item(item)) {
+					JOptionPane.showMessageDialog(frmComputerShop, "Barcode already exists!", "Barcode Conflict",
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				shop.inventory.save();
 				table_admin.setDataVector(table_data(), new String[] {
 						"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
@@ -754,13 +760,13 @@ public class Context {
 		btnBasket_clear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				basket_model.removeAllElements();
-				shop.basket.empty();
+				((Customer) active_user).basket.empty();
 			}
 		});
 
 		btnBasket_add.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				BasketBucket bucket = shop.basket.append(selected_item, 1);
+				BasketBucket bucket = ((Customer) active_user).basket.append(selected_item, 1);
 				if (bucket.getCount() > bucket.getItem().getQuantity()) {
 					JOptionPane.showMessageDialog(frmComputerShop,
 							"Sorry, there is no more stock in the shop.", "Too Many Items", JOptionPane.ERROR_MESSAGE);
@@ -776,7 +782,7 @@ public class Context {
 
 		btnBasket_buy.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println(shop.basket.price());
+				System.out.println(((Customer) active_user).basket.price());
 				String[] options = new String[] {
 						"Credit Card",
 						"PayPal",
@@ -827,7 +833,7 @@ public class Context {
 					layout.show(panel_shop, "PANEL_ADMIN");
 				} else {
 					recreate_table_customer();
-					shop.basket.empty();
+					((Customer) active_user).basket.empty();
 					basket_model.clear();
 					layout.show(panel_shop, "PANEL_CUSTOMER");
 				}
@@ -903,4 +909,3 @@ public class Context {
 		});
 	}
 }
-// TODO: Filtering customer table

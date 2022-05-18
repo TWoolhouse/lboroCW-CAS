@@ -1,7 +1,5 @@
 package cas.inv;
 
-import java.util.List;
-
 public class Mouse extends Item {
 	public enum Type {
 		standard,
@@ -15,14 +13,6 @@ public class Mouse extends Item {
 		super(data);
 		type = Type.valueOf(data[2].toLowerCase());
 		buttons = Integer.valueOf(data[9]);
-	}
-
-	@Override
-	public List<String> display() {
-		List<String> list = super.display();
-		list.add(5, type.toString());
-		list.add(6, buttons.toString());
-		return list;
 	}
 
 	@Override

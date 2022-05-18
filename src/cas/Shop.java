@@ -1,18 +1,20 @@
 package cas;
 
-import cas.inv.Basket;
 import cas.inv.Inventory;
 import cas.user.Users;
 
 public class Shop {
 	public Inventory inventory;
-	public Basket basket;
 	public Users users;
 
+	/**
+	 *
+	 * @param stock_file Stock data file path
+	 * @param user_file  User data file path
+	 */
 	Shop(String stock_file, String user_file) {
 		inventory = new Inventory(stock_file);
 		users = new Users(user_file);
-		basket = new Basket();
 		inventory.save();
 
 	}

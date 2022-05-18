@@ -3,6 +3,10 @@ package cas.inv;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An abstract Item which is also a {@link cas.io.RowCSV} so it can be written
+ * to the stock file
+ */
 public abstract class Item implements cas.io.RowCSV {
 	public enum Connection {
 		wired,
@@ -33,6 +37,11 @@ public abstract class Item implements cas.io.RowCSV {
 		this.price = price;
 	}
 
+	/**
+	 * Takes a split version of a csv row
+	 *
+	 * @param data the csv row
+	 */
 	Item(String[] data) {
 		this(data[0],
 				data[3],
@@ -43,25 +52,43 @@ public abstract class Item implements cas.io.RowCSV {
 				Double.valueOf(data[8]));
 	}
 
+	/**
+	 *
+	 * @return Basket display of an item
+	 */
 	public String getDisplayName() {
 		return this.getBarcode() + " " + this.getBrand() + " " + this.getClass().getSimpleName();
 	}
 
-	public List<String> display() {
-		List<String> list = new ArrayList<String>(8);
+	/**
+	 *
+	 * @return Data back as an array for the JTable
+	 */
+	public final List<String> display() {
+		List<String> list = new ArrayList<String>(10);
 		list.add(this.getClass().getSimpleName());
 		list.add(getBarcode());
 		list.add(brand);
 		list.add(colour);
 		list.add(connectivity.toString());
+		list.add(variant_name());
+		list.add(extra());
 		list.add(getQuantity().toString());
 		list.add(getPrice().toString());
 		list.add(original.toString());
 		return list;
 	}
 
+	/**
+	 *
+	 * @return Keyboard type and Mouse Type enums name
+	 */
 	abstract protected String variant_name();
 
+	/**
+	 *
+	 * @return The second extra field e.g mouse buttons
+	 */
 	abstract protected String extra();
 
 	@Override

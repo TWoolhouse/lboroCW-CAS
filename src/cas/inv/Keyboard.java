@@ -1,7 +1,5 @@
 package cas.inv;
 
-import java.util.List;
-
 public class Keyboard extends Item {
 	public enum Type {
 		standard,
@@ -21,14 +19,6 @@ public class Keyboard extends Item {
 		super(data);
 		type = Type.valueOf(data[2].toLowerCase());
 		layout = Layout.valueOf(data[9].toUpperCase());
-	}
-
-	@Override
-	public List<String> display() {
-		List<String> list = super.display();
-		list.add(5, type.toString());
-		list.add(6, layout.toString());
-		return list;
 	}
 
 	@Override

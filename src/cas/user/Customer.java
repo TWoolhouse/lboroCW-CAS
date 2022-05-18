@@ -5,7 +5,10 @@ import cas.pay.PaymentMethod;
 
 public class Customer extends User {
 
-	private Basket basket;
+	/**
+	 * The customers basket
+	 */
+	public Basket basket;
 
 	public Customer(String[] data) {
 		super(data);
