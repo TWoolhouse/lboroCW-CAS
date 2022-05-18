@@ -18,7 +18,7 @@ public class Inventory {
 		handler.close();
 	}
 
-	private Boolean add_item(Item item) {
+	public Boolean add_item(Item item) {
 		if (!items.containsKey(item.getBarcode())) {
 			items.put(item.getBarcode(), item);
 			return true;

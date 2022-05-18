@@ -3,7 +3,7 @@ package cas.inv;
 import java.util.List;
 
 public class Mouse extends Item {
-	enum Type {
+	public enum Type {
 		standard,
 		gaming
 	}

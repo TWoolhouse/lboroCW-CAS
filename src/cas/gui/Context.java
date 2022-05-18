@@ -13,11 +13,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -42,6 +44,8 @@ import javax.swing.table.DefaultTableModel;
 import cas.Shop;
 import cas.inv.BasketBucket;
 import cas.inv.Item;
+import cas.inv.Keyboard;
+import cas.inv.Mouse;
 import cas.pay.CreditCard;
 import cas.pay.PayPal;
 import cas.pay.PaymentMethod;
@@ -68,6 +72,7 @@ public class Context {
 	private JSpinner number_quantity;
 	private JSpinner number_cost;
 	private JSpinner number_price;
+	private JComboBox combo_create_type;
 
 	/**
 	 * Launch the application.
@@ -154,13 +159,17 @@ public class Context {
 			dialog.setVisible(false);
 			basket_model.removeAllElements();
 			shop.basket.purchase();
-			// TODO: Affect the global file
+			// TODO: Reenable
 			// shop.inventory.save();
 			table_model.setDataVector(table_data(), new String[] {
 					"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
 					"Quantity", "Price"
 			});
 		}
+	}
+
+	private static String[] enum_names(Class<? extends Enum<?>> e) {
+		return Arrays.stream(e.getEnumConstants()).map(Enum::name).toArray(String[]::new);
 	}
 
 	static abstract class Fonts {
@@ -318,7 +327,7 @@ public class Context {
 		sl_panel_create.putConstraint(SpringLayout.WEST, lblNewLabel_4, 2, SpringLayout.WEST, panel_create);
 		panel_create.add(lblNewLabel_4);
 
-		JComboBox combo_create_type = new JComboBox();
+		combo_create_type = new JComboBox();
 		combo_create_type.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.NORTH, combo_create_type, 10, SpringLayout.SOUTH, lblNewLabel_4);
 		sl_panel_create.putConstraint(SpringLayout.WEST, combo_create_type, 10, SpringLayout.WEST, panel_create);
@@ -393,14 +402,14 @@ public class Context {
 		panel_create.add(lbl_create_5);
 
 		number_cost = new JSpinner();
-		number_cost.setModel(new SpinnerNumberModel(new Integer(0), new Integer(0), null, new Integer(1)));
+		number_cost.setModel(new SpinnerNumberModel(new Double(0), new Double(0), null, new Double(1)));
 		number_cost.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.NORTH, number_cost, spread, SpringLayout.SOUTH, number_quantity);
 		sl_panel_create.putConstraint(SpringLayout.WEST, number_cost, 0, SpringLayout.WEST, combo_create_type);
 		sl_panel_create.putConstraint(SpringLayout.EAST, number_cost, 0, SpringLayout.EAST, combo_create_type);
 		panel_create.add(number_cost);
 
-		JLabel lbl_create_6 = new JLabel("Cost");
+		JLabel lbl_create_6 = new JLabel("Original Cost");
 		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_6, 0, SpringLayout.EAST, number_cost);
 		lbl_create_6.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_6, 0, SpringLayout.WEST, number_cost);
@@ -408,14 +417,14 @@ public class Context {
 		panel_create.add(lbl_create_6);
 
 		number_price = new JSpinner();
-		number_price.setModel(new SpinnerNumberModel(new Float(0), new Float(0), null, new Float(1)));
+		number_price.setModel(new SpinnerNumberModel(new Double(0), new Double(0), null, new Double(1)));
 		number_price.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.NORTH, number_price, spread, SpringLayout.SOUTH, number_cost);
 		sl_panel_create.putConstraint(SpringLayout.WEST, number_price, 0, SpringLayout.WEST, combo_create_type);
 		sl_panel_create.putConstraint(SpringLayout.EAST, number_price, 0, SpringLayout.EAST, combo_create_type);
 		panel_create.add(number_price);
 
-		JLabel lbl_create_7 = new JLabel("Price");
+		JLabel lbl_create_7 = new JLabel("Retail Price");
 		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_7, 0, SpringLayout.EAST, number_price);
 		lbl_create_7.setFont(Fonts.small);
 		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_7, 0, SpringLayout.WEST, number_price);
@@ -435,7 +444,7 @@ public class Context {
 		create_keyboard.setLayout(sl_create_keyboard);
 
 		JComboBox combo_keyboard_layout = new JComboBox();
-		combo_keyboard_layout.setModel(new DefaultComboBoxModel(new String[] { "UK", "US" }));
+		combo_keyboard_layout.setModel(new DefaultComboBoxModel(enum_names(Keyboard.Layout.class)));
 		combo_keyboard_layout.setFont(Fonts.small);
 		sl_create_keyboard.putConstraint(SpringLayout.NORTH, combo_keyboard_layout, spread, SpringLayout.NORTH,
 				create_keyboard);
@@ -456,7 +465,7 @@ public class Context {
 		create_keyboard.add(lbl_create_keyboard_1);
 
 		JComboBox combo_keyboard_type = new JComboBox();
-		combo_keyboard_type.setModel(new DefaultComboBoxModel(new String[] { "Standard", "Flexible", "Gaming" }));
+		combo_keyboard_type.setModel(new DefaultComboBoxModel(enum_names(Keyboard.Type.class)));
 		sl_create_keyboard.putConstraint(SpringLayout.NORTH, combo_keyboard_type, 16, SpringLayout.SOUTH,
 				combo_keyboard_layout);
 		sl_create_keyboard.putConstraint(SpringLayout.WEST, combo_keyboard_type, 0, SpringLayout.WEST, create_keyboard);
@@ -480,6 +489,7 @@ public class Context {
 		create_mouse.setLayout(sl_create_mouse);
 
 		JComboBox combo_mouse_type = new JComboBox();
+		combo_mouse_type.setModel(new DefaultComboBoxModel(enum_names(Mouse.Type.class)));
 		sl_create_mouse.putConstraint(SpringLayout.NORTH, combo_mouse_type, 16, SpringLayout.NORTH, create_mouse);
 		sl_create_mouse.putConstraint(SpringLayout.WEST, combo_mouse_type, 0, SpringLayout.WEST, create_mouse);
 		sl_create_mouse.putConstraint(SpringLayout.EAST, combo_mouse_type, 0, SpringLayout.EAST, create_mouse);
@@ -523,7 +533,7 @@ public class Context {
 		JComboBox combo_connection = new JComboBox();
 		sl_panel_create.putConstraint(SpringLayout.EAST, lbl_create_4, 0, SpringLayout.EAST, combo_connection);
 		combo_connection.setFont(Fonts.small);
-		combo_connection.setModel(new DefaultComboBoxModel(new String[] { "wired", "wireless" }));
+		combo_connection.setModel(new DefaultComboBoxModel(enum_names(Item.Connection.class)));
 		sl_panel_create.putConstraint(SpringLayout.NORTH, number_quantity, spread, SpringLayout.SOUTH,
 				combo_connection);
 		sl_panel_create.putConstraint(SpringLayout.WEST, lbl_create_4, 0, SpringLayout.WEST, combo_connection);
@@ -542,7 +552,55 @@ public class Context {
 		panel_create.add(create_item);
 
 		// CREATE STOCK HANDLERS
-		txt_barcode.addKeyListener(new KeyAdapterExtensionSizedDigit(6, txt_barcode));
+		btn_update_create(create_item);
+
+		txt_barcode.addKeyListener(new KeyAdapterExtensionSizedDigit(6, txt_barcode) {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				super.keyReleased(e);
+				btn_update_create(create_item);
+			}
+		});
+		for (JComponent comp : new JComponent[] { txt_brand, txt_colour }) {
+			comp.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyReleased(KeyEvent arg0) {
+					super.keyReleased(arg0);
+					btn_update_create(create_item);
+				}
+			});
+		}
+		create_item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String mode = (String) combo_create_type.getSelectedItem();
+				Item item = null;
+				if (mode.equalsIgnoreCase("Keyboard")) {
+					item = new Keyboard(new String[] { txt_barcode.getText(), null,
+							((String) combo_keyboard_type.getSelectedItem()).toLowerCase(), txt_brand.getText(),
+							txt_colour.getText(), ((String) combo_connection.getSelectedItem()).toLowerCase(),
+							number_quantity.getValue().toString(), number_cost.getValue().toString(),
+							number_price.getValue().toString(),
+							((String) combo_keyboard_layout.getSelectedItem()).toUpperCase() });
+					// 235066, keyboard, flexible, Microsoft, black, wireless, 5, 45.5, 60.0, UK,
+				} else if (mode.equalsIgnoreCase("Mouse")) {
+					item = new Mouse(new String[] { txt_barcode.getText(), null,
+							((String) combo_mouse_type.getSelectedItem()).toLowerCase(), txt_brand.getText(),
+							txt_colour.getText(), ((String) combo_connection.getSelectedItem()).toLowerCase(),
+							number_quantity.getValue().toString(), number_cost.getValue().toString(),
+							number_price.getValue().toString(),
+							number_mouse_buttons.getValue().toString() });
+					// 112233, mouse, gaming, Logitech, black, wireless, 15, 7.5, 9.5, 3,
+				}
+				shop.inventory.add_item(item);
+				// TODO: Reenable
+				// shop.inventory.save();
+				table_admin.setDataVector(table_data(), new String[] {
+						"Type", "Barcode", "Brand", "Colour", "Connectivity", "Type", "Language/Buttons",
+						"Quantity", "Price", "Original"
+				});
+				table_1.updateUI();
+			}
+		});
 
 		JPanel panel_payments = new JPanel();
 		panel_shop.add(panel_payments, "name_11891378842800");
@@ -735,6 +793,24 @@ public class Context {
 		// panel_payments.add(panel_pay_creditcard);
 		// panel_payments.add(panel_pay_paypal);
 
+	}
+
+	private static boolean digit_only(String string) {
+		for (int i = 0; i < string.length(); i++) {
+			if (!Character.isDigit(string.charAt(i)))
+				return false;
+		}
+		return true;
+	}
+
+	private static boolean non_empty_field(JTextField field) {
+		return !field.getText().isEmpty();
+	}
+
+	private void btn_update_create(JButton btn) {
+		boolean flag = (txt_barcode.getText().length() == 6 && digit_only(txt_barcode.getText())) &&
+				non_empty_field(txt_brand) && non_empty_field(txt_colour);
+		btn.setEnabled(flag);
 	}
 
 	private Object[][] table_data() {

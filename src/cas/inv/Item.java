@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Item implements cas.io.RowCSV {
-	enum Connection {
+	public enum Connection {
 		wired,
 		wireless,
 	};

@@ -3,13 +3,13 @@ package cas.inv;
 import java.util.List;
 
 public class Keyboard extends Item {
-	enum Type {
+	public enum Type {
 		standard,
 		flexible,
 		gaming
 	}
 
-	enum Layout {
+	public enum Layout {
 		UK,
 		US
 	}
